@@ -134,7 +134,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * 确认将当前浏览的路径作为博客存放文件夹：固化这次选择（仓库 + 目录），
-     * 下次冷启动会直接恢复到文章列表首页；然后开始扫描该目录下所有 index.md。
+     * 下次冷启动会直接恢复到文章列表首页；然后开始扫描该目录下各子文件夹的第一个 .md 文件。
      */
     fun confirmBaseFolder(path: String) {
         val selectedRepo = _uiState.value.selectedRepo ?: return

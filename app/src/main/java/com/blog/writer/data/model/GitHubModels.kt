@@ -67,7 +67,7 @@ data class UpdateFileResponse(
 /** APP 内部表示一篇博客文章 */
 data class BlogPost(
     val folderName: String,   // 子文件夹名，作为文章标题/slug
-    val path: String,         // index.md 在仓库中的完整路径
+    val path: String,         // 文章 md 文件在仓库中的完整路径
     val sha: String,          // 用于后续更新
     val title: String,        // 从 front-matter 或文件名解析出的标题
     val excerpt: String = ""  // 内容摘要，供列表预览

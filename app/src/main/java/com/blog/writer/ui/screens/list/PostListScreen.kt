@@ -86,7 +86,7 @@ fun PostListScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (posts.isEmpty()) {
                 Text(
-                    "未在该目录下发现任何 index.md 文章",
+                    "未在该目录下发现任何 .md 文章",
                     modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

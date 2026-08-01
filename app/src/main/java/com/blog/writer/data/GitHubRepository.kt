@@ -59,7 +59,7 @@ class GitHubRepository(private val token: String) {
     }
 
     /**
-     * 遍历 baseFolder 下的所有一级子文件夹，找到每个子文件夹里的 index.md，
+     * 遍历 baseFolder 下的所有一级子文件夹，找到每个子文件夹里的第一个 .md 文件（按文件名排序），
      * 解析出标题与摘要，组装为 BlogPost 列表。
      * 用 Semaphore 限制并发数，避免子文件夹很多时一次性打出大量并发请求。
      */
@@ -70,10 +70,13 @@ class GitHubRepository(private val token: String) {
             async {
                 semaphore.withPermit {
                     runCatching {
-                        // index.md 路径是约定固定的，直接按路径取文件内容即可；
-                        // 不存在就是接口报错/返回空，走 getOrNull 兜底为 null。
-                        val indexPath = if (baseFolder.isBlank()) "${dir.name}/index.md" else "${dir.path}/index.md"
-                        val fileDetail = api.getFileContent(auth(), owner, repo, indexPath).body()
+                        // 先列出子文件夹内容，找到按文件名排序后的第一个 .md 文件；
+                        // 找不到就当作该文件夹没有文章，走 getOrNull 兜底为 null。
+                        val firstMdFile = listContents(owner, repo, dir.path)
+                            .filter { it.type == "file" && it.name.endsWith(".md", ignoreCase = true) }
+                            .minByOrNull { it.name }
+                            ?: return@runCatching null
+                        val fileDetail = api.getFileContent(auth(), owner, repo, firstMdFile.path).body()
                             ?: return@runCatching null
                         val content = resolveContent(owner, repo, fileDetail)
                         val title = parseTitle(content) ?: dir.name
