@@ -30,6 +30,9 @@ data class AppUiState(
     val initialRestoreDone: Boolean = false
 )
 
+/** 把异常转成给用户看的文案；GitHubApiException 自带状态码信息，其它异常（比如断网）大多 message 为空，兜底一句通用提示 */
+private fun errorMessageOf(e: Throwable): String = e.message?.takeIf { it.isNotBlank() } ?: "网络请求失败，请检查网络连接后重试"
+
 /**
  * access_token 持久化在 SharedPreferences（见 TokenStore）里，APP 重启后会自动读回，
  * 不需要重新走一遍 GitHub 授权；只有用户主动退出登录时才会清空。
@@ -99,7 +102,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     _uiState.value = _uiState.value.copy(isLoading = false, repos = list)
                 }
                 .onFailure {
-                    _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = it.message)
+                    _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessageOf(it))
                 }
         }
     }
@@ -124,7 +127,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     folderContents = list.filter { it.type == "dir" }
                 )
             }.onFailure {
-                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = it.message)
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessageOf(it))
             }
         }
     }
@@ -149,7 +152,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }.onSuccess { list ->
                 _uiState.value = _uiState.value.copy(isLoading = false, posts = list)
             }.onFailure {
-                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = it.message)
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessageOf(it))
             }
         }
     }
@@ -168,12 +171,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }.getOrNull()
     }
 
-    suspend fun savePostContent(path: String, content: String, sha: String): Boolean {
-        val repo = repository ?: return false
-        val selectedRepo = _uiState.value.selectedRepo ?: return false
+    /** @return 保存成功时返回 GitHub 生成的新 sha（下次保存要用这个值），失败返回 null */
+    suspend fun savePostContent(path: String, content: String, sha: String): String? {
+        val repo = repository ?: return null
+        val selectedRepo = _uiState.value.selectedRepo ?: return null
         return runCatching {
             repo.saveFile(selectedRepo.owner.login, selectedRepo.name, path, content, sha)
-        }.getOrDefault(false)
+        }.getOrNull()
     }
 
     fun clearError() {

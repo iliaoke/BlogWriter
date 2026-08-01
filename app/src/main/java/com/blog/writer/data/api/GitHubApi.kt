@@ -1,5 +1,6 @@
 package com.blog.writer.data.api
 
+import com.blog.writer.data.model.GitHubBlob
 import com.blog.writer.data.model.GitHubContent
 import com.blog.writer.data.model.GitHubRepo
 import com.blog.writer.data.model.GitHubUser
@@ -46,6 +47,16 @@ interface GitHubApi {
         @Path(value = "path", encoded = true) path: String,
         @Query("ref") ref: String? = null
     ): Response<GitHubContent>
+
+    // Contents API 对 >1MB 的文件不会内联返回 base64 内容（content 为 null），
+    // 需要拿文件的 sha 再调这个接口取内容，不受 1MB 限制（最大 100MB）
+    @GET("repos/{owner}/{repo}/git/blobs/{file_sha}")
+    suspend fun getBlob(
+        @Header("Authorization") token: String,
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("file_sha") fileSha: String
+    ): Response<GitHubBlob>
 
     @PUT("repos/{owner}/{repo}/contents/{path}")
     suspend fun updateFile(

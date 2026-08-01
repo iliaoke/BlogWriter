@@ -19,8 +19,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,9 +37,22 @@ import com.blog.writer.ui.theme.AppIcons
 fun RepoSelectScreen(
     repos: List<GitHubRepo>,
     isLoading: Boolean,
+    errorMessage: String? = null,
+    onErrorShown: () -> Unit = {},
     onRepoSelected: (GitHubRepo) -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    // 加载/鉴权失败时会把错误信息放进 errorMessage，之前这个字段虽然有，但没有任何界面
+    // 展示过它——遇到 401/限流等情况用户只会看到一个空列表，不知道发生了什么。
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            onErrorShown()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(title = { Text("选择仓库") })
         }

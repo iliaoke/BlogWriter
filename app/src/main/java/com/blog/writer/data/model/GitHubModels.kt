@@ -37,6 +37,19 @@ data class GitHubUser(
     val name: String? = null
 )
 
+/**
+ * Git Blobs API 返回体：Contents API 对 >1MB 的文件不会内联返回 content
+ * （content 为 null），需要用文件的 sha 再调一次 Blobs 接口取内容，
+ * 这个接口不受 1MB 限制（最大到 100MB）。
+ */
+@Serializable
+data class GitHubBlob(
+    val sha: String,
+    val size: Long = 0,
+    val content: String? = null,
+    val encoding: String? = null
+)
+
 /** 用于更新/创建文件的请求体 */
 @Serializable
 data class UpdateFileRequest(

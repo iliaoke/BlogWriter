@@ -71,6 +71,8 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
             RepoSelectScreen(
                 repos = uiState.repos,
                 isLoading = uiState.isLoading,
+                errorMessage = uiState.errorMessage,
+                onErrorShown = { viewModel.clearError() },
                 onRepoSelected = {
                     viewModel.selectRepo(it)
                     navController.navigate(Routes.FOLDER_SELECT)
@@ -83,6 +85,8 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
                 currentPath = uiState.currentFolderPath,
                 contents = uiState.folderContents,
                 isLoading = uiState.isLoading,
+                errorMessage = uiState.errorMessage,
+                onErrorShown = { viewModel.clearError() },
                 onNavigate = { viewModel.browseFolder(it) },
                 onConfirm = {
                     viewModel.confirmBaseFolder(it)
@@ -102,6 +106,8 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
                 baseFolder = uiState.selectedBaseFolder.orEmpty(),
                 posts = uiState.posts,
                 isLoading = uiState.isLoading,
+                errorMessage = uiState.errorMessage,
+                onErrorShown = { viewModel.clearError() },
                 onOpenPost = { post ->
                     currentEditingPost = post
                     navController.navigate(Routes.editor(URLEncoder.encode(post.path, "UTF-8")))
@@ -140,12 +146,13 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
                 isLoading = loading,
                 onBack = { navController.popBackStack() },
                 onSave = { newContent ->
-                    val success = viewModel.savePostContent(path, newContent, sha)
-                    if (success) {
-                        val fresh = viewModel.loadPostContent(path)
-                        sha = fresh?.second ?: sha
+                    // saveFile 的响应体里已经带了保存后的新 sha，直接用它更新本地状态即可，
+                    // 不需要像之前那样保存成功后再额外发一次 GET 请求去确认新 sha。
+                    val newSha = viewModel.savePostContent(path, newContent, sha)
+                    if (newSha != null) {
+                        sha = newSha
                     }
-                    success
+                    newSha != null
                 }
             )
         }
