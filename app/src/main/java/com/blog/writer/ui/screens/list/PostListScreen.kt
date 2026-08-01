@@ -36,7 +36,7 @@ fun PostListScreen(
     isLoading: Boolean,
     onOpenPost: (BlogPost) -> Unit,
     onRefresh: () -> Unit,
-    onChangeFolder: () -> Unit
+    onExit: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -52,11 +52,11 @@ fun PostListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onChangeFolder) {
-                        Icon(AppIcons.Folder(), contentDescription = "切换文件夹")
-                    }
                     IconButton(onClick = onRefresh) {
                         Icon(AppIcons.Refresh(), contentDescription = "刷新")
+                    }
+                    IconButton(onClick = onExit) {
+                        Icon(AppIcons.Logout(), contentDescription = "退出，重新选择仓库和目录")
                     }
                 }
             )

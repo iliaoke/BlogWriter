@@ -40,13 +40,20 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
         }
     }
 
-    // 仅在“未登录 -> 已登录”这一次跳转时自动导航到仓库选择页，
-    // 其余页面切换均由各界面的按钮回调显式触发 navController.navigate，避免和用户手动导航冲突。
+    // 仅在“未登录 -> 已登录”这一次跳转时自动导航，其余页面切换均由各界面的按钮回调
+    // 显式触发 navController.navigate，避免和用户手动导航冲突。
+    // 跳去哪个页面取决于仓库 + 目录是否已经固化过：
+    // - 已固化 -> 直接进入文章列表首页，不需要重新选；
+    // - 未固化（第一次登录）-> 走仓库选择页。
+    // 这里必须等 uiState.initialRestoreDone 变为 true 之后再跳转，因为刚拿到 token 的
+    // 瞬间还不知道有没有固化过的仓库/目录，过早跳转会导致固化恢复的场景被误判成未选择。
     var hasAutoNavigatedAfterLogin by remember { mutableStateOf(false) }
-    LaunchedEffect(uiState.token) {
-        if (!uiState.token.isNullOrBlank() && !hasAutoNavigatedAfterLogin) {
+    LaunchedEffect(uiState.token, uiState.initialRestoreDone) {
+        if (!uiState.token.isNullOrBlank() && uiState.initialRestoreDone && !hasAutoNavigatedAfterLogin) {
             hasAutoNavigatedAfterLogin = true
-            navController.navigate(Routes.REPO_SELECT) {
+            val hasPersistedSelection = uiState.selectedRepo != null && uiState.selectedBaseFolder != null
+            val destination = if (hasPersistedSelection) Routes.POST_LIST else Routes.REPO_SELECT
+            navController.navigate(destination) {
                 popUpTo(0)
                 launchSingleTop = true
             }
@@ -100,8 +107,12 @@ fun AppNavHost(oauthCallbackUri: Uri?) {
                     navController.navigate(Routes.editor(URLEncoder.encode(post.path, "UTF-8")))
                 },
                 onRefresh = { viewModel.refreshPosts() },
-                onChangeFolder = {
-                    navController.navigate(Routes.FOLDER_SELECT)
+                onExit = {
+                    viewModel.exitRepoSelection()
+                    navController.navigate(Routes.REPO_SELECT) {
+                        popUpTo(0)
+                        launchSingleTop = true
+                    }
                 }
             )
         }

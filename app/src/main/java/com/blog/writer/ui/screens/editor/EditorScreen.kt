@@ -48,7 +48,8 @@ fun EditorScreen(
     onSave: suspend (content: String) -> Boolean
 ) {
     var content by remember(initialContent) { mutableStateOf(initialContent) }
-    var previewMode by remember { mutableStateOf(false) }
+    // 默认打开文章就是预览（渲染后的）状态，只有点击右上角的编辑按钮才会切到可编辑状态
+    var previewMode by remember { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -65,7 +66,11 @@ fun EditorScreen(
                 },
                 actions = {
                     IconButton(onClick = { previewMode = !previewMode }) {
-                        Icon(AppIcons.Preview(), contentDescription = "预览/编辑切换")
+                        if (previewMode) {
+                            Icon(AppIcons.Edit(), contentDescription = "编辑")
+                        } else {
+                            Icon(AppIcons.Preview(), contentDescription = "预览")
+                        }
                     }
                     IconButton(
                         enabled = !saving,

@@ -20,4 +20,6 @@ object AppIcons {
     val Save: @Composable () -> Painter = { painterResource(R.drawable.ic_save) }
     val Refresh: @Composable () -> Painter = { painterResource(R.drawable.ic_refresh) }
     val ArrowBack: @Composable () -> Painter = { painterResource(R.drawable.ic_arrow_back) }
+    val Logout: @Composable () -> Painter = { painterResource(R.drawable.ic_logout) }
+    val Edit: @Composable () -> Painter = { painterResource(R.drawable.ic_edit) }
 }
