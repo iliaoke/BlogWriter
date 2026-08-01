@@ -9,7 +9,7 @@
 3. **选择仓库**：拉取 `GET /user/repos`，以列表形式展示，点击进入下一步。
 4. **选择博客文件夹**：从仓库根目录开始逐级浏览（`GET /repos/{owner}/{repo}/contents/{path}`），确认某个目录为“博客文件夹”。
 5. **扫描文章**：遍历该文件夹下的所有一级子文件夹，查找每个子文件夹里的 `index.md`，解析 front-matter 中的 `title` 或首个 `# 标题` 作为文章标题，摘要取正文前 80 字，最终以列表形式展示在主页。
-6. **预览/编辑**：点击某篇文章进入编辑器，右上角图标可在“编辑（纯文本）”与“预览（Markwon 渲染 Markdown）”之间切换；点击保存按钮会调用 `PUT /repos/{owner}/{repo}/contents/{path}` 提交修改（自动带上文件的 `sha`，避免冲突）。
+6. **预览/编辑**：点击某篇文章进入编辑器，右上角图标可在“编辑（纯文本）”与“预览（compose-markdown 渲染 Markdown）”之间切换；点击保存按钮会调用 `PUT /repos/{owner}/{repo}/contents/{path}` 提交修改（自动带上文件的 `sha`，避免冲突）。
 
 ## ⚠️ 关于 GitHub OAuth 的重要说明
 
@@ -72,5 +72,5 @@ app/src/main/java/com/blog/writer/
 
 - 目前 access_token 明文存放于 DataStore，生产环境建议改为 `EncryptedSharedPreferences` / Android Keystore 加密存储。
 - 文件夹扫描目前只做一级子目录（子文件夹本身放 `index.md`），如果博客目录结构更深，可以在 `GitHubRepository.scanBlogPosts` 里改成递归。
-- 编辑器目前是纯文本框 + Markwon 预览，如需要工具栏（加粗/插入图片/表格）可以在 `EditorScreen` 基础上继续加。
+- 编辑器目前是纯文本框 + compose-markdown 预览，如需要工具栏（加粗/插入图片/表格）可以在 `EditorScreen` 基础上继续加。
 - 保存冲突处理：如果远端文件在你编辑期间被别人修改，`sha` 会不匹配导致 409，目前只是提示“保存失败”，可以再加冲突后自动拉取最新内容合并的逻辑。

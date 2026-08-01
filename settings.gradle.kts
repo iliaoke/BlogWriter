@@ -10,6 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // compose-markdown 通过 JitPack 分发
+        maven { url = uri("https://jitpack.io") }
     }
 }
 

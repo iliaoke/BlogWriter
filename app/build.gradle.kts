@@ -109,10 +109,7 @@ dependencies {
     implementation("androidx.browser:browser:1.10.0")
 
     // Markdown 渲染
-    implementation("io.noties.markwon:core:4.6.2")
-    implementation("io.noties.markwon:ext-tables:4.6.2")
-    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
-    implementation("io.noties.markwon:html:4.6.2")
+    implementation("com.github.jeziellago:compose-markdown:0.7.2")
 
     // Base64 编解码走 Android 内置 android.util.Base64，无需额外依赖
 

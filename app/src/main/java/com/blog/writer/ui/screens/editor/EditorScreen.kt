@@ -27,13 +27,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import io.noties.markwon.Markwon
-import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
-import io.noties.markwon.ext.tables.TablePlugin
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import com.blog.writer.ui.theme.AppIcons
 import kotlinx.coroutines.launch
 
@@ -119,26 +115,12 @@ fun EditorScreen(
 
 @Composable
 private fun MarkdownPreview(markdown: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val markwon = remember {
-        Markwon.builder(context)
-            .usePlugin(TablePlugin.create(context))
-            .usePlugin(StrikethroughPlugin.create())
-            .build()
-    }
-
-    AndroidView(
+    MarkdownText(
+        markdown = markdown,
         modifier = modifier
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
             .fillMaxWidth(),
-        factory = { ctx ->
-            android.widget.TextView(ctx).apply {
-                setTextIsSelectable(true)
-            }
-        },
-        update = { textView ->
-            markwon.setMarkdown(textView, markdown)
-        }
+        isTextSelectable = true
     )
 }

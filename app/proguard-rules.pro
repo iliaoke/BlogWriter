@@ -30,7 +30,9 @@
     @retrofit2.http.* <methods>;
 }
 
-# ===== Markwon（内部用了少量反射/服务发现） =====
+# ===== compose-markdown（内部基于 Markwon，用了少量反射/服务发现） =====
+-keep class dev.jeziellago.compose.markdowntext.** { *; }
+-dontwarn dev.jeziellago.compose.markdowntext.**
 -keep class io.noties.markwon.** { *; }
 -dontwarn io.noties.markwon.**
 
