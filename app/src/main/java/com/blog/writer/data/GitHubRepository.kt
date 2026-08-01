@@ -47,11 +47,11 @@ class GitHubRepository(private val token: String) {
         val deferred = subDirs.map { dir ->
             async {
                 runCatching {
+                    // index.md 路径是约定固定的，直接按路径取文件内容即可；
+                    // 不存在就是接口报错/返回空，走 getOrNull 兜底为 null，
+                    // 不需要像之前那样先 listContents 确认存在再取一次内容（省一次网络往返）。
                     val indexPath = if (baseFolder.isBlank()) "${dir.name}/index.md" else "${dir.path}/index.md"
-                    val fileList = listContents(owner, repo, if (baseFolder.isBlank()) dir.name else dir.path)
-                    val indexFile = fileList.firstOrNull { it.name == "index.md" && it.type == "file" }
-                        ?: return@runCatching null
-                    val fileDetail = api.getFileContent(auth(), owner, repo, indexFile.path).body()
+                    val fileDetail = api.getFileContent(auth(), owner, repo, indexPath).body()
                         ?: return@runCatching null
                     val content = decodeBase64Content(fileDetail.content)
                     val title = parseTitle(content) ?: dir.name

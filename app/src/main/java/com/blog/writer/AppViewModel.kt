@@ -60,30 +60,33 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (persist) {
             tokenStore.saveToken(token, scope)
         }
+        // 仓库 + 目录之前固化过的话，直接恢复现场，跳过仓库/目录选择流程。
+        // 这一步只依赖本地 SharedPreferences（同步、瞬时），不需要等任何网络请求，
+        // 所以立刻做，尽快把 initialRestoreDone 置为 true，让导航层马上跳转，
+        // 不要为了拿 login（仅用于展示用户名，非阻塞信息）而多等一次网络往返。
+        val savedRepo = repoConfigStore.getRepo()
+        val savedFolder = repoConfigStore.getBaseFolder()
+        if (savedRepo != null && savedFolder != null) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                selectedRepo = savedRepo,
+                currentFolderPath = savedFolder,
+                selectedBaseFolder = savedFolder,
+                initialRestoreDone = true
+            )
+            loadPosts(savedRepo, savedFolder)
+        } else {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                initialRestoreDone = true
+            )
+            loadRepos()
+        }
+
+        // login 只用于展示，跟导航/加载文章无关，单独异步拉取，拿到后再更新即可
         viewModelScope.launch {
             val login = runCatching { repository?.getCurrentLogin() }.getOrNull()
-
-            // 仓库 + 目录之前固化过的话，直接恢复现场，跳过仓库/目录选择流程
-            val savedRepo = repoConfigStore.getRepo()
-            val savedFolder = repoConfigStore.getBaseFolder()
-            if (savedRepo != null && savedFolder != null) {
-                _uiState.value = _uiState.value.copy(
-                    login = login,
-                    isLoading = false,
-                    selectedRepo = savedRepo,
-                    currentFolderPath = savedFolder,
-                    selectedBaseFolder = savedFolder,
-                    initialRestoreDone = true
-                )
-                loadPosts(savedRepo, savedFolder)
-            } else {
-                _uiState.value = _uiState.value.copy(
-                    login = login,
-                    isLoading = false,
-                    initialRestoreDone = true
-                )
-                loadRepos()
-            }
+            _uiState.value = _uiState.value.copy(login = login)
         }
     }
 

@@ -2,3 +2,4 @@
 /.gradle/
 /app/build/
 /app/build/intermediates/javac/release/compileReleaseJavaWithJavac/classes/
+build/reports/problems/problems-report.html
